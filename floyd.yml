@@ -1,0 +1,9 @@
+env: pytorch-1.0
+machine: gpu
+task:
+ train:
+   description: train binary classification model on PCam dataset
+   command: python train.py --num-workers 16
+   input:
+    - source: eifuentes/datasets/pcam/1
+      destination: input

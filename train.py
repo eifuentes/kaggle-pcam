@@ -14,13 +14,10 @@ from ignite.engine import (Events, create_supervised_evaluator,
                            create_supervised_trainer)
 from ignite.metrics import BinaryAccuracy, Loss, RunningAverage
 from torch.optim import Adam
-# import torchvision.utils as vutils
 from torch.utils.data import DataLoader, random_split
 
 from dataset import PCamDataset, calculate_statistics
 from model import WideResNetBinaryClassifier
-
-# from skorch import NeuralNetClassifier
 
 
 def run(data_dir, validation_size=0.10, batch_size=64,
@@ -156,7 +153,7 @@ def run(data_dir, validation_size=0.10, batch_size=64,
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='PCam Training Script')
-    parser.add_argument('--data-dir', type=str)
+    parser.add_argument('--datadir', type=str, default='/input/')
     parser.add_argument('--val-size', type=float, default=0.10)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--max-epochs', type=int, default=10)
@@ -167,7 +164,6 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=None)
     args = parser.parse_args()
 
-    # data_dir = '/Users/eifuentes/Data/pcam/'
-    run(args.data_dir, args.val_size, args.batch_size,
+    run(args.datadir, args.val_size, args.batch_size,
         args.max_epochs, args.lr, args.beta1, args.beta2,
         args.num_workers, args.seed)
