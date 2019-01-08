@@ -39,8 +39,8 @@ def create_summary_writer(model, dloader, logdir):
 def fmt_metric(mode, name, value, step):
     metric = {
         'metric': str(mode) + '_' + str(name),
-        'value': f'{value:.5f}',
-        'step': f'{int(step)}'
+        'value': round(value, 5),
+        'step': int(step)
     }
     return json.dumps(metric)
 
@@ -51,10 +51,12 @@ def log_metric(mode, name, value, step, writer=None):
         writer.add_scalar(f'{mode}/{name}', value, step)
 
 
-def run(datadir, outdir, validation_size=0.10, batch_size=64,
+def run(datadir, outdir, validation_size=0.10, batch_size=128,
         max_epochs=10, lr=1e-3, beta1=0.9, beta2=0.999,
-        num_workers=8, seed=None,
-        log_iter_interval=10, logdir=None):
+        num_workers=32, seed=None,
+        log_iter_interval=20, logdir=None):
+    experiment_params = locals()
+    print(experiment_params)
     # setup and device specific config
     seed = seed if seed else randint(1, 1000)
     random.seed(seed)
@@ -125,7 +127,7 @@ def run(datadir, outdir, validation_size=0.10, batch_size=64,
 
     # setup model, optimizer, tensorboard writer, trainers and evaluators
     model = WideResNetBinaryClassifier(in_channels=3,
-                                       num_groups=3, num_blocks_per_group=3,
+                                       num_groups=4, num_blocks_per_group=3,
                                        channel_scale_factor=6, init_num_channels=16,
                                        dropout_proba=0.0, residual_scale_factor=0.2)
     writer = create_summary_writer(model, train_dloader, logdir)
@@ -173,23 +175,23 @@ def run(datadir, outdir, validation_size=0.10, batch_size=64,
     trainer.run(train_dloader, max_epochs=max_epochs)
 
     # save model and its assets
-    torch.save(model.state_dict(), os.path.join(outdir, 'model'))
+    torch.save(model.state_dict(), os.path.join(outdir, 'model.pt'))
 
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='PCam Training Script')
-    parser.add_argument('--datadir', type=str, default='/input/')
-    parser.add_argument('--outdir', type=str, default='assets')
+    parser.add_argument('--datadir', type=str, default='/pcam')
+    parser.add_argument('--outdir', type=str, default='/output')
     parser.add_argument('--val-size', type=float, default=0.10)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--max-epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--beta1', type=float, default=0.9)
     parser.add_argument('--beta2', type=float, default=0.999)
-    parser.add_argument('--num-workers', type=int, default=8)
+    parser.add_argument('--num-workers', type=int, default=32)
     parser.add_argument('--seed', type=int, default=None)
-    parser.add_argument('--log-iter-interval', type=int, default=10)
+    parser.add_argument('--log-iter-interval', type=int, default=20)
     parser.add_argument('--logdir', type=str, default='logs')
     args = parser.parse_args()
 
