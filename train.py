@@ -51,12 +51,23 @@ def log_metric(mode, name, value, step, writer=None):
         writer.add_scalar(f'{mode}/{name}', value, step)
 
 
+def save_experiment_params(artifacts_dir, experiment_params):
+    with open(os.path.join(artifacts_dir, 'experiment.json'), 'w') as fp:
+        experiment_params = {p: experiment_params[p] for p in experiment_params
+                             if isinstance(experiment_params[p], (str, int, float, list, tuple, bool))}
+        json.dump(experiment_params, fp, sort_keys=True, indent=4)
+    print('saved experiment params')
+
+
 def run(datadir, outdir, validation_size=0.10, batch_size=128,
         max_epochs=10, lr=1e-3, beta1=0.9, beta2=0.999,
         num_workers=32, seed=None,
         log_iter_interval=20, logdir=None):
+
+    # experiment params
     experiment_params = locals()
     print(experiment_params)
+
     # setup and device specific config
     seed = seed if seed else randint(1, 1000)
     random.seed(seed)
@@ -72,6 +83,10 @@ def run(datadir, outdir, validation_size=0.10, batch_size=128,
         device = torch.device('cpu')
         non_blocking = False
         dloader_args = {'num_workers': num_workers, 'pin_memory': False}
+    experiment_params['seed'] = seed
+    experiment_params['non_blocking'] = non_blocking
+    print(f'using device: {device.type}')
+    print(f'set random seed to {seed}')
 
     # load training labels and calculate class info
     label_filename = Path(datadir, 'train_labels.csv')
@@ -90,13 +105,15 @@ def run(datadir, outdir, validation_size=0.10, batch_size=128,
     num_train_samples = len(training_dset) - num_val_samples
     train_dset, val_dset = random_split(training_dset,
                                         [num_train_samples, num_val_samples])
-    test_dset = PCamDataset(datadir, 'test', transform=vtransforms.ToTensor())
     train_mean, train_std = calculate_statistics(train_dset,
                                                  batch_size, num_workers)
     val_mean, val_std = calculate_statistics(val_dset,
                                              batch_size, num_workers)
-    test_mean, test_std = calculate_statistics(test_dset,
-                                               batch_size, num_workers)
+    experiment_params['normalization'] = {
+        'mean': train_mean,
+        'std': train_std
+    }
+    print(f'normalization mean: {train_mean} | std: {train_std}')
 
     # create data preprocessing pipeline for train/test
     train_dtransform = vtransforms.Compose([
@@ -115,15 +132,12 @@ def run(datadir, outdir, validation_size=0.10, batch_size=128,
         vtransforms.Normalize(train_mean, train_std)
     ])
     training_dset.transform = train_dtransform
-    test_dset.transform = test_dtransform
 
     # assemble train, validation, test dataloaders
     train_dloader = DataLoader(train_dset, batch_size=batch_size,
                                shuffle=True, **dloader_args)
     val_dloader = DataLoader(val_dset, batch_size=batch_size,
                              shuffle=False, **dloader_args)
-    # test_dloader = DataLoader(test_dset, batch_size=batch_size,
-    #                           shuffle=False, **dloader_args)
 
     # setup model, optimizer, tensorboard writer, trainers and evaluators
     model = WideResNetBinaryClassifier(in_channels=3,
@@ -170,6 +184,9 @@ def run(datadir, outdir, validation_size=0.10, batch_size=128,
         log_metric('validation', 'bce', avg_bce, engine.state.iteration, writer)
         log_metric('validation', 'roc', avg_roc, engine.state.iteration, writer)
         log_metric('validation', 'accuracy', avg_accuracy, engine.state.iteration, writer)
+
+    # save experiment run params
+    save_experiment_params(outdir, experiment_params)
 
     # conduct training
     trainer.run(train_dloader, max_epochs=max_epochs)
