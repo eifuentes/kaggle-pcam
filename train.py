@@ -60,7 +60,7 @@ def save_experiment_params(artifacts_dir, experiment_params):
 
 
 def run(datadir, outdir, validation_size=0.10, batch_size=128,
-        max_epochs=10, lr=5e-4, beta1=0.5, beta2=0.9,
+        max_epochs=10, lr=1e-3, beta1=0.5, beta2=0.9,
         num_workers=32, seed=None,
         log_iter_interval=20, logdir=None):
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     parser.add_argument('--val-size', type=float, default=0.10)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--max-epochs', type=int, default=10)
-    parser.add_argument('--lr', type=float, default=0.0005)
+    parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--beta1', type=float, default=0.5)
     parser.add_argument('--beta2', type=float, default=0.9)
     parser.add_argument('--num-workers', type=int, default=32)
