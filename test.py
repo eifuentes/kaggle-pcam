@@ -34,7 +34,7 @@ def eval_on_test(model, dloader, device, non_blocking=False):
                 idx = (i * batch_size) + j
                 test_pred_probas.append({
                     'id': str(ids[idx]),
-                    'label': pred_proba
+                    'label': pred_proba[0]
                 })
     return pd.DataFrame.from_records(test_pred_probas).set_index('id', verify_integrity=True)
 
