@@ -187,6 +187,7 @@ class WideResNetBinaryClassifier(nn.Module):
                                    num_blocks_per_group,
                                    channel_scale_factor, init_num_channels,
                                    dropout_proba, residual_scale_factor)
+        self.dropoutfin = nn.Dropout(0.5, inplace=True)
         self.classifier = nn.Linear(self.features.num_features, 1, bias=True)
 
         # initialize linear layer weights and bias
@@ -195,5 +196,6 @@ class WideResNetBinaryClassifier(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
+        x = self.dropoutfin(x)
         x = self.classifier(x)
         return torch.sigmoid(x)
