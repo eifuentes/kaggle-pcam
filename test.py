@@ -65,8 +65,8 @@ def run(datadir, modeldir, outdir, batch_size=128, num_workers=32):
         print(params)
     except Exception:
         print('unable to find model experiment.json')
-        norm_mean = [0.7023522853851318, 0.546073853969574, 0.6963717937469482]
-        norm_std = [0.23241718113422394, 0.27298659086227417, 0.21017064154148102]
+    norm_mean = [0.7025811672210693, 0.5464618802070618, 0.6965253353118896]
+    norm_std = [0.23728851974010468, 0.27987757325172424, 0.21474722027778625]
 
     # create data preprocessing pipeline
     test_dtransform = vtransforms.Compose([
