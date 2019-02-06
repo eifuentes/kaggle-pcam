@@ -117,7 +117,7 @@ def run(datadir, outdir, validation_size=0.10, batch_size=32,
 
     # create data preprocessing pipeline for train/test
     train_dtransform = vtransforms.Compose([
-        vtransforms.ColorJitter(brightness=0.05, contrast=0.05),
+        # vtransforms.ColorJitter(brightness=0.05, contrast=0.05),
         vtransforms.RandomAffine(
             degrees=(180), translate=(0.05, 0.05),
             scale=(0.8, 1.2), shear=0.05, resample=PIL.Image.BILINEAR

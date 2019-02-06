@@ -40,7 +40,7 @@ class PCamDataset(Dataset):
             label = self.labels[idx]
         else:
             label = -1
-        sample = Image.open(filename)
+        sample = Image.open(filename).convert(mode='HSV')
         if self.transform:
             sample = self.transform(sample)
             label = torch.FloatTensor([label])
